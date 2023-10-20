@@ -295,3 +295,27 @@ func (b *userRepo) GetAllDeletedUser(c context.Context, req *models.GetAllUserRe
 	}
 	return resp, nil
 }
+
+func (b *userRepo) GetByUsername(c context.Context, req *models.LoginRequest) (resp *models.LoginDataRespond, err error) {
+
+	query := `
+			SELECT 
+				"username", 
+				"password"
+			FROM "users" 
+				WHERE "username"=$1`
+
+	user := models.LoginDataRespond{}
+	err = b.db.QueryRow(context.Background(), query, req.Username).Scan(
+		&user.Username,
+		&user.Password,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	return &user, nil
+}

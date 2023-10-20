@@ -18,6 +18,7 @@ type UsersI interface {
 	DeleteUser(context.Context, *models.IdRequest) (string, error)
 
 	GetAllDeletedUser(context.Context, *models.GetAllUserRequest) (*models.GetAllUser, error)
+	GetByUsername(context.Context, *models.LoginRequest) (*models.LoginDataRespond, error)
 }
 
 type PostsI interface {

@@ -2,6 +2,7 @@ package api
 
 import (
 	_ "auth/api/docs"
+	"auth/pkg/helper"
 
 	"auth/api/handler"
 
@@ -10,26 +11,33 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func NewServer(h *handler.Handler) *gin.Engine {
 	r := gin.Default()
 
-	r.POST("/user", h.CreateUser)
-	r.GET("/user/:id", h.GetUser)
-	r.GET("/user", h.GetAllUser)
-	r.PUT("/user/:id", h.UpdateUser)
-	r.DELETE("/user/:id", h.DeleteUser)
+	r.POST("/auth/login", h.Login)
+	r.POST("/auth/sign-up", h.SignUp)
 
-	r.GET("/deleted-users", h.GetAllDeletedUser)
+	r.POST("/user", helper.AuthMiddleWare, h.CreateUser)
+	r.GET("/user/:id", helper.AuthMiddleWare, h.GetUser)
+	r.GET("/user", helper.AuthMiddleWare, h.GetAllUser)
+	r.PUT("/user/:id", helper.AuthMiddleWare, h.UpdateUser)
+	r.DELETE("/user/:id", helper.AuthMiddleWare, h.DeleteUser)
 
-	r.POST("/post", h.CreatePost)
-	r.GET("/post/:id", h.GetPost)
-	r.GET("/post", h.GetAllPost)
-	r.PUT("/post/:id", h.UpdatePost)
-	r.DELETE("/post", h.DeletePost)
+	r.GET("/deleted-users", helper.AuthMiddleWare, h.GetAllDeletedUser)
 
-	r.GET("/deleted-posts", h.GetAllDeletedPost)
+	r.POST("/post", helper.AuthMiddleWare, h.CreatePost)
+	r.GET("/post/:id", helper.AuthMiddleWare, h.GetPost)
+	r.GET("/post", helper.AuthMiddleWare, h.GetAllPost)
+	r.PUT("/post/:id", helper.AuthMiddleWare, h.UpdatePost)
+	r.DELETE("/post", helper.AuthMiddleWare, h.DeletePost)
 
-	url := ginSwagger.URL("swagger/doc.json") // The url pointing to API definition
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	r.GET("/deleted-posts", helper.AuthMiddleWare, h.GetAllDeletedPost)
+
+	// Serve Swagger API documentation
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	return r
 }

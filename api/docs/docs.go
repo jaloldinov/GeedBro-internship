@@ -15,8 +15,117 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AUTH"
+                ],
+                "summary": "auth",
+                "parameters": [
+                    {
+                        "description": "data of user",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginRespond"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-up": {
+            "post": {
+                "description": "CREATES USER BASED ON GIVEN DATA",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AUTH"
+                ],
+                "summary": "CREATES USER",
+                "parameters": [
+                    {
+                        "description": "user data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResp"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResp"
+                        }
+                    }
+                }
+            }
+        },
         "/deleted-posts": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "gets all post based on limit, page and search by postname",
                 "consumes": [
                     "application/json"
@@ -82,6 +191,11 @@ const docTemplate = `{
         },
         "/deleted-users": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "gets all user based on limit, page and search by username",
                 "consumes": [
                     "application/json"
@@ -147,6 +261,11 @@ const docTemplate = `{
         },
         "/post": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "gets all post based on limit, page and search by postname",
                 "consumes": [
                     "application/json"
@@ -210,6 +329,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "creates a new post based on the given postname amd password",
                 "consumes": [
                     "application/json"
@@ -260,6 +384,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "DELETES POST BASED ON ID",
                 "consumes": [
                     "application/json"
@@ -312,6 +441,11 @@ const docTemplate = `{
         },
         "/post/{id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "gets the post by ID",
                 "consumes": [
                     "application/json"
@@ -361,6 +495,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "UPDATES POST BASED ON GIVEN DATA AND ID",
                 "consumes": [
                     "application/json"
@@ -413,6 +552,11 @@ const docTemplate = `{
         },
         "/user": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "gets all user based on limit, page and search by username",
                 "consumes": [
                     "application/json"
@@ -476,6 +620,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "creates a new user based on the given username amd password",
                 "consumes": [
                     "application/json"
@@ -528,6 +677,11 @@ const docTemplate = `{
         },
         "/user/{id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "gets the user by ID",
                 "consumes": [
                     "application/json"
@@ -577,6 +731,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "UPDATES USER BASED ON GIVEN DATA AND ID",
                 "consumes": [
                     "application/json"
@@ -627,6 +786,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "DELETES USER BASED ON ID",
                 "consumes": [
                     "application/json"
@@ -745,6 +909,25 @@ const docTemplate = `{
                 }
             }
         },
+        "models.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LoginRespond": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Post": {
             "type": "object",
             "properties": {
@@ -850,6 +1033,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

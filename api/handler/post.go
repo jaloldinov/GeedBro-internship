@@ -11,6 +11,7 @@ import (
 )
 
 // CreatePost godoc
+// @Security ApiKeyAuth
 // @Router       /post [POST]
 // @Summary      CREATES POST
 // @Description  creates a new post based on the given postname amd password
@@ -41,6 +42,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 }
 
 // GetPost godoc
+// @Security ApiKeyAuth
 // @Router       /post/{id} [GET]
 // @Summary      GET POST BY ID
 // @Description  gets the post by ID
@@ -66,6 +68,7 @@ func (h *Handler) GetPost(c *gin.Context) {
 }
 
 // ListPosts godoc
+// @Security ApiKeyAuth
 // @Router       /post [GET]
 // @Summary      GET  ALL POSTS
 // @Description  gets all post based on limit, page and search by postname
@@ -107,6 +110,7 @@ func (h *Handler) GetAllPost(c *gin.Context) {
 }
 
 // UpdatePost godoc
+// @Security ApiKeyAuth
 // @Router       /post/{id} [PUT]
 // @Summary      UPDATES POST BY ID
 // @Description  UPDATES POST BASED ON GIVEN DATA AND ID
@@ -138,6 +142,7 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 }
 
 // DeletePost godoc
+// @Security ApiKeyAuth
 // @Router       /post [DELETE]
 // @Summary      DELETE POST BY ID
 // @Description  DELETES POST BASED ON ID
@@ -169,6 +174,7 @@ func (h *Handler) DeletePost(c *gin.Context) {
 }
 
 // ListPosts godoc
+// @Security ApiKeyAuth
 // @Router       /deleted-posts [GET]
 // @Summary      GETS ALL DELETED POSTS
 // @Description  gets all post based on limit, page and search by postname

@@ -42,6 +42,18 @@ definitions:
       count:
         type: integer
     type: object
+  models.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  models.LoginRespond:
+    properties:
+      token:
+        type: string
+    type: object
   models.Post:
     properties:
       created_at:
@@ -114,6 +126,74 @@ definitions:
 info:
   contact: {}
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login
+      parameters:
+      - description: data of user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginRespond'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+      summary: auth
+      tags:
+      - AUTH
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: CREATES USER BASED ON GIVEN DATA
+      parameters:
+      - description: user data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+      summary: CREATES USER
+      tags:
+      - AUTH
   /deleted-posts:
     get:
       consumes:
@@ -155,6 +235,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: GETS ALL DELETED POSTS
       tags:
       - POST
@@ -199,6 +281,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: GETS ALL DELETED USERS
       tags:
       - USER
@@ -233,6 +317,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: DELETE POST BY ID
       tags:
       - POST
@@ -276,6 +362,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: GET  ALL POSTS
       tags:
       - POST
@@ -309,6 +397,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: CREATES POST
       tags:
       - POST
@@ -343,6 +433,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: GET POST BY ID
       tags:
       - POST
@@ -376,6 +468,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: UPDATES POST BY ID
       tags:
       - POST
@@ -420,6 +514,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: GET  ALL USERS
       tags:
       - USER
@@ -453,6 +549,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: CREATES USER
       tags:
       - USER
@@ -487,6 +585,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: DELETE USER BY ID
       tags:
       - USER
@@ -520,6 +620,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: GET USER BY ID
       tags:
       - USER
@@ -553,7 +655,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
       summary: UPDATES USER BY ID
       tags:
       - USER
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -12,6 +12,7 @@ import (
 )
 
 // CreateUser godoc
+// @Security ApiKeyAuth
 // @Router       /user [POST]
 // @Summary      CREATES USER
 // @Description  creates a new user based on the given username amd password
@@ -50,6 +51,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 }
 
 // GetUser godoc
+// @Security ApiKeyAuth
 // @Router       /user/{id} [GET]
 // @Summary      GET USER BY ID
 // @Description  gets the user by ID
@@ -75,6 +77,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 }
 
 // ListUsers godoc
+// @Security ApiKeyAuth
 // @Router       /user [GET]
 // @Summary      GET  ALL USERS
 // @Description  gets all user based on limit, page and search by username
@@ -116,6 +119,7 @@ func (h *Handler) GetAllUser(c *gin.Context) {
 }
 
 // UpdateUser godoc
+// @Security ApiKeyAuth
 // @Router       /user/{id} [PUT]
 // @Summary      UPDATES USER BY ID
 // @Description  UPDATES USER BASED ON GIVEN DATA AND ID
@@ -147,6 +151,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 }
 
 // DeleteUser godoc
+// @Security ApiKeyAuth
 // @Router       /user/{id} [DELETE]
 // @Summary      DELETE USER BY ID
 // @Description  DELETES USER BASED ON ID
@@ -172,6 +177,7 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 }
 
 // ListUsers godoc
+// @Security ApiKeyAuth
 // @Router       /deleted-users [GET]
 // @Summary      GETS ALL DELETED USERS
 // @Description  gets all user based on limit, page and search by username
