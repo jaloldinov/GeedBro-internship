@@ -8,8 +8,6 @@ definitions:
     type: object
   models.CreatePost:
     properties:
-      created_by:
-        type: string
       description:
         type: string
       photos:
@@ -35,19 +33,15 @@ definitions:
     properties:
       id:
         type: string
-      user_id:
-        type: string
     type: object
   models.GetAllMyPostRequest:
     properties:
+      description:
+        type: string
       limit:
         type: integer
       page:
         type: integer
-      user_id:
-        type: string
-      username:
-        type: string
     type: object
   models.GetAllPost:
     properties:
@@ -104,8 +98,6 @@ definitions:
     type: object
   models.UpdatePost:
     properties:
-      created_by:
-        type: string
       description:
         type: string
       id:

@@ -1094,9 +1094,6 @@ const docTemplate = `{
         "models.CreatePost": {
             "type": "object",
             "properties": {
-                "created_by": {
-                    "type": "string"
-                },
                 "description": {
                     "type": "string"
                 },
@@ -1135,26 +1132,20 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         },
         "models.GetAllMyPostRequest": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "limit": {
                     "type": "integer"
                 },
                 "page": {
                     "type": "integer"
-                },
-                "user_id": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -1243,9 +1234,6 @@ const docTemplate = `{
         "models.UpdatePost": {
             "type": "object",
             "properties": {
-                "created_by": {
-                    "type": "string"
-                },
                 "description": {
                     "type": "string"
                 },

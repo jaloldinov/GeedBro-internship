@@ -300,6 +300,7 @@ func (b *userRepo) GetByUsername(c context.Context, req *models.LoginRequest) (r
 
 	query := `
 			SELECT 
+			"id",
 				"username", 
 				"password"
 			FROM "users" 
@@ -307,6 +308,7 @@ func (b *userRepo) GetByUsername(c context.Context, req *models.LoginRequest) (r
 
 	user := models.LoginDataRespond{}
 	err = b.db.QueryRow(context.Background(), query, req.Username).Scan(
+		&user.User_id,
 		&user.Username,
 		&user.Password,
 	)

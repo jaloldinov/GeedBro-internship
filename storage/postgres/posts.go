@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"auth/models"
+	"auth/pkg/helper"
 	"context"
 	"database/sql"
 	"fmt"
@@ -23,6 +24,7 @@ func NewPostRepo(db *pgxpool.Pool) *postRepo {
 }
 
 func (b *postRepo) CreatePost(c context.Context, req *models.CreatePost) (string, error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
 	id := uuid.NewString()
 
 	query := `
@@ -40,7 +42,7 @@ func (b *postRepo) CreatePost(c context.Context, req *models.CreatePost) (string
 		id,
 		req.Description,
 		req.Photos,
-		req.CreatedBy,
+		userInfo.User_id,
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to create post: %w", err)
@@ -221,7 +223,9 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 }
 
 func (b *postRepo) GetAllMyActivePost(c context.Context, req *models.GetAllMyPostRequest) (*models.GetAllPost, error) {
-	filter := fmt.Sprintf(` WHERE deleted_at IS NULL AND created_by = '%s'`, *req.User_id)
+	userInfo := c.Value("user_info").(helper.TokenInfo)
+
+	filter := fmt.Sprintf(` WHERE deleted_at IS NULL AND created_by = '%s'`, userInfo.User_id)
 
 	query := `
 		SELECT 
@@ -237,11 +241,11 @@ func (b *postRepo) GetAllMyActivePost(c context.Context, req *models.GetAllMyPos
 		FROM "post"
 	`
 
-	countQuery := fmt.Sprintf(`SELECT count(*) FROM post WHERE deleted_at IS NULL AND created_by = '%s'`, *req.User_id)
+	countQuery := fmt.Sprintf(`SELECT count(*) FROM post WHERE deleted_at IS NULL AND created_by = '%s'`, userInfo.User_id)
 
 	if *req.Search != "" {
 		filter += fmt.Sprintf(` AND description ILIKE  '%s' `, "%"+*req.Search+"%")
-		countQuery += fmt.Sprintf(` AND description ILIKE '%s'`, *req.Search)
+		countQuery += fmt.Sprintf(` AND description ILIKE '%s'`, "%"+*req.Search+"%")
 	}
 
 	if *req.Page != 0 && *req.Limit != 0 {
@@ -325,6 +329,7 @@ func (b *postRepo) GetAllMyActivePost(c context.Context, req *models.GetAllMyPos
 }
 
 func (b *postRepo) UpdatePost(c context.Context, req *models.UpdatePost) (string, error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
 
 	query := `
 			UPDATE "post" 
@@ -340,9 +345,9 @@ func (b *postRepo) UpdatePost(c context.Context, req *models.UpdatePost) (string
 		query,
 		req.Description,
 		req.Photos,
-		req.CreatedBy,
+		userInfo.User_id,
 		req.ID,
-		req.CreatedBy,
+		userInfo.User_id,
 	)
 
 	if err != nil {
@@ -357,6 +362,8 @@ func (b *postRepo) UpdatePost(c context.Context, req *models.UpdatePost) (string
 }
 
 func (b *postRepo) DeletePost(c context.Context, req *models.DeletePost) (resp string, err error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
+
 	query := `
 	 	UPDATE "post" 
 		SET 
@@ -371,9 +378,9 @@ func (b *postRepo) DeletePost(c context.Context, req *models.DeletePost) (resp s
 	result, err := b.db.Exec(
 		context.Background(),
 		query,
-		req.UserId,
-		req.UserId,
+		userInfo.User_id,
 		req.Id,
+		userInfo.User_id,
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to update post: %w", err)

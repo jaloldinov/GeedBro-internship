@@ -1,9 +1,10 @@
 package models
 
+import "mime/multipart"
+
 type CreatePost struct {
-	Description string   `json:"description"`
-	Photos      []string `json:"photos"`
-	CreatedBy   string   `json:"created_by"`
+	Description string                  `json:"description"`
+	Photos      []*multipart.FileHeader `json:"photos" form:"photos"`
 }
 
 type Post struct {
@@ -19,28 +20,25 @@ type Post struct {
 }
 
 type DeletePost struct {
-	Id     string `json:"id"`
-	UserId string `json:"user_id"`
+	Id string `json:"id"`
 }
 
 type UpdatePost struct {
 	ID          string   `json:"id"`
 	Description string   `json:"description"`
 	Photos      []string `json:"photos"`
-	CreatedBy   string   `json:"created_by"`
 }
 
 type GetAllPostRequest struct {
 	Page   *int    `json:"page"`
 	Limit  *int    `json:"limit"`
-	Search *string `json:"username"`
+	Search *string `json:"description"`
 }
 
 type GetAllMyPostRequest struct {
-	User_id *string `json:"user_id"`
-	Page    *int    `json:"page"`
-	Limit   *int    `json:"limit"`
-	Search  *string `json:"username"`
+	Page   *int    `json:"page"`
+	Limit  *int    `json:"limit"`
+	Search *string `json:"description"`
 }
 
 type GetAllPost struct {

@@ -32,7 +32,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.storage.Post().CreatePost(c.Request.Context(), &post)
+	resp, err := h.storage.Post().CreatePost(c, &post)
 	if err != nil {
 		fmt.Println("error Post Create:", err.Error())
 		c.JSON(http.StatusInternalServerError, "internal server error")
@@ -57,7 +57,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 func (h *Handler) GetPost(c *gin.Context) {
 	id := c.Param("id")
 
-	resp, err := h.storage.Post().GetPost(c.Request.Context(), &models.IdRequest{Id: id})
+	resp, err := h.storage.Post().GetPost(c, &models.IdRequest{Id: id})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		fmt.Println("error Post Get:", err.Error())
@@ -84,9 +84,6 @@ func (h *Handler) GetPost(c *gin.Context) {
 // @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetAllMyPost(c *gin.Context) {
 
-	userId := c.Keys["user_info"]
-	fmt.Println(userId)
-
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {
 		h.log.Error("error get page:", logger.Error(err))
@@ -102,11 +99,10 @@ func (h *Handler) GetAllMyPost(c *gin.Context) {
 
 	search := c.Query("search")
 
-	resp, err := h.storage.Post().GetAllMyActivePost(c.Request.Context(), &models.GetAllMyPostRequest{
-		Page:    &page,
-		Limit:   &limit,
-		Search:  &search,
-		User_id: &search,
+	resp, err := h.storage.Post().GetAllMyActivePost(c, &models.GetAllMyPostRequest{
+		Page:   &page,
+		Limit:  &limit,
+		Search: &search,
 	})
 	if err != nil {
 		h.log.Error("error:", logger.Error(err))
@@ -213,7 +209,7 @@ func (h *Handler) DeletePost(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.storage.Post().DeletePost(c.Request.Context(), &models.DeletePost{Id: post.Id, UserId: post.UserId})
+	resp, err := h.storage.Post().DeletePost(c.Request.Context(), &models.DeletePost{Id: post.Id})
 	if err != nil {
 		h.log.Error("error deleting post:", logger.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
