@@ -38,6 +38,17 @@ definitions:
       user_id:
         type: string
     type: object
+  models.GetAllMyPostRequest:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
   models.GetAllPost:
     properties:
       Posts:
@@ -407,6 +418,52 @@ paths:
       summary: GET LIKE BY ID
       tags:
       - LIKE
+  /my/post:
+    get:
+      consumes:
+      - application/json
+      description: gets all post based on limit, page and search by postname
+      parameters:
+      - default: 10
+        description: limit
+        in: query
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 1
+        description: page
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetAllMyPostRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
+      summary: GET  ALL POSTS
+      tags:
+      - POST
   /post:
     delete:
       consumes:

@@ -49,6 +49,12 @@ func ParseClaims(token string, secretKey string) (result TokenInfo, err error) {
 		return result, err
 	}
 
+	result.Username = cast.ToString(claims["user_id"])
+	if len(result.Username) <= 0 {
+		err = errors.New("cannot parse 'user_id' field")
+		return result, err
+	}
+
 	return
 }
 

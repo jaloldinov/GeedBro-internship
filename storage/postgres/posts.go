@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"auth/models"
-	"auth/pkg/helper"
 	"context"
 	"database/sql"
 	"fmt"
@@ -118,46 +117,45 @@ func (b *postRepo) GetPost(c context.Context, req *models.IdRequest) (resp *mode
 }
 
 func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostRequest) (*models.GetAllPost, error) {
-	params := make(map[string]interface{})
-	var resp = &models.GetAllPost{}
+	filter := ` WHERE deleted_at IS NULL `
 
-	resp.Posts = make([]models.Post, 0)
-
-	filter := " WHERE deleted_at IS NULL "
 	query := `
-			SELECT
-				COUNT(*) OVER(),
-				"id", 
-				"description", 
-				"photos", 
-				"created_at",
-				"created_by",
-				"updated_at",
-				"updated_by",
-				"deleted_at",
-				"deleted_by"
-			FROM "post"
-		`
-	if req.Search != "" {
-		filter += ` AND "description" ILIKE '%' || :description || '%' `
-		params["description"] = req.Search
+		SELECT 
+			"id", 
+			"description", 
+			"photos", 
+			"created_at",
+			"created_by",
+			"updated_at",
+			"updated_by",
+			"deleted_at",
+			"deleted_by"
+		FROM "post"
+	`
+
+	countQuery := `SELECT count(*) FROM post WHERE deleted_at IS NULL `
+
+	if *req.Search != "" {
+		filter += fmt.Sprintf(` AND description ILIKE  '%s' `, "%"+*req.Search+"%")
+		countQuery += fmt.Sprintf(` AND description ILIKE '%s'`, *req.Search)
 	}
 
-	offset := (req.Page - 1) * req.Limit
-	params["limit"] = req.Limit
-	params["offset"] = offset
+	if *req.Page != 0 && *req.Limit != 0 {
+		offset := (*req.Page - 1) * (*req.Limit)
+		filter += fmt.Sprintf(" LIMIT %d OFFSET %d", *req.Limit, offset)
+	}
 
-	query = query + filter + " ORDER BY created_at DESC OFFSET :offset LIMIT :limit "
-	rquery, pArr := helper.ReplaceQueryParams(query, params)
+	query += filter
 
-	rows, err := b.db.Query(context.Background(), rquery, pArr...)
+	rows, err := b.db.Query(c, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %w", err)
+		return nil, err
 	}
 	defer rows.Close()
 
-	for rows.Next() {
+	posts := make([]models.Post, 0)
 
+	for rows.Next() {
 		var (
 			created_at sql.NullTime
 			created_by sql.NullString
@@ -169,7 +167,6 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 		post := models.Post{}
 
 		err := rows.Scan(
-			&resp.Count,
 			&post.ID,
 			&post.Description,
 			&post.Photos,
@@ -183,6 +180,7 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 		if err != nil {
 			return nil, err
 		}
+
 		post.CreatedAt = created_at.Time.Format(time.RFC3339)
 		post.CreatedBy = created_by.String
 		if updated_at.Valid {
@@ -201,9 +199,129 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 			post.DeletedBy = deleted_by.String
 		}
 
-		resp.Posts = append(resp.Posts, post)
+		posts = append(posts, post)
 	}
-	return resp, nil
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	count := 0
+	err = b.db.QueryRow(c, countQuery).Scan(&count)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &models.GetAllPost{
+		Posts: posts,
+		Count: count,
+	}
+
+	return response, nil
+}
+
+func (b *postRepo) GetAllMyActivePost(c context.Context, req *models.GetAllMyPostRequest) (*models.GetAllPost, error) {
+	filter := fmt.Sprintf(` WHERE deleted_at IS NULL AND created_by = '%s'`, *req.User_id)
+
+	query := `
+		SELECT 
+			"id", 
+			"description", 
+			"photos", 
+			"created_at",
+			"created_by",
+			"updated_at",
+			"updated_by",
+			"deleted_at",
+			"deleted_by"
+		FROM "post"
+	`
+
+	countQuery := fmt.Sprintf(`SELECT count(*) FROM post WHERE deleted_at IS NULL AND created_by = '%s'`, *req.User_id)
+
+	if *req.Search != "" {
+		filter += fmt.Sprintf(` AND description ILIKE  '%s' `, "%"+*req.Search+"%")
+		countQuery += fmt.Sprintf(` AND description ILIKE '%s'`, *req.Search)
+	}
+
+	if *req.Page != 0 && *req.Limit != 0 {
+		offset := (*req.Page - 1) * (*req.Limit)
+		filter += fmt.Sprintf(" LIMIT %d OFFSET %d", *req.Limit, offset)
+	}
+
+	query += filter
+
+	rows, err := b.db.Query(c, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	posts := make([]models.Post, 0)
+
+	for rows.Next() {
+		var (
+			created_at sql.NullTime
+			created_by sql.NullString
+			updated_at sql.NullTime
+			updated_by sql.NullString
+			deleted_at sql.NullTime
+			deleted_by sql.NullString
+		)
+		post := models.Post{}
+
+		err := rows.Scan(
+			&post.ID,
+			&post.Description,
+			&post.Photos,
+			&created_at,
+			&created_by,
+			&updated_at,
+			&updated_by,
+			&deleted_at,
+			&deleted_by,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		post.CreatedAt = created_at.Time.Format(time.RFC3339)
+		post.CreatedBy = created_by.String
+		if updated_at.Valid {
+			post.UpdatedAt = updated_at.Time.Format(time.RFC3339)
+		}
+
+		if updated_by.Valid {
+			post.UpdatedBy = updated_by.String
+		}
+
+		if deleted_at.Valid {
+			post.DeletedAt = deleted_at.Time.Format(time.RFC3339)
+		}
+
+		if deleted_by.Valid {
+			post.DeletedBy = deleted_by.String
+		}
+
+		posts = append(posts, post)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	count := 0
+	err = b.db.QueryRow(c, countQuery).Scan(&count)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &models.GetAllPost{
+		Posts: posts,
+		Count: count,
+	}
+
+	return response, nil
 }
 
 func (b *postRepo) UpdatePost(c context.Context, req *models.UpdatePost) (string, error) {
@@ -269,46 +387,45 @@ func (b *postRepo) DeletePost(c context.Context, req *models.DeletePost) (resp s
 }
 
 func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRequest) (*models.GetAllPost, error) {
-	params := make(map[string]interface{})
-	var resp = &models.GetAllPost{}
+	filter := ` WHERE deleted_at IS NOT NULL`
 
-	resp.Posts = make([]models.Post, 0)
-
-	filter := " WHERE deleted_at IS NOT NULL"
 	query := `
-			SELECT
-				COUNT(*) OVER(),
-				"id", 
-				"description", 
-				"photos", 
-				"created_at",
-				"created_by",
-				"updated_at",
-				"updated_by",
-				"deleted_at",
-				"deleted_by"
-			FROM "post"
-		`
-	if req.Search != "" {
-		filter += ` AND "description" ILIKE '%' || :description || '%' `
-		params["description"] = req.Search
+		SELECT 
+			"id", 
+			"description", 
+			"photos", 
+			"created_at",
+			"created_by",
+			"updated_at",
+			"updated_by",
+			"deleted_at",
+			"deleted_by"
+		FROM "post"
+	`
+
+	countQuery := `SELECT count(*) FROM post WHERE deleted_at IS NOT NULL `
+
+	if *req.Search != "" {
+		filter += fmt.Sprintf(` AND description ILIKE  '%s' `, "%"+*req.Search+"%")
+		countQuery += fmt.Sprintf(` AND description ILIKE '%s'`, *req.Search)
 	}
 
-	offset := (req.Page - 1) * req.Limit
-	params["limit"] = req.Limit
-	params["offset"] = offset
+	if *req.Page != 0 && *req.Limit != 0 {
+		offset := (*req.Page - 1) * (*req.Limit)
+		filter += fmt.Sprintf(" LIMIT %d OFFSET %d", *req.Limit, offset)
+	}
 
-	query = query + filter + " ORDER BY created_at DESC OFFSET :offset LIMIT :limit "
-	rquery, pArr := helper.ReplaceQueryParams(query, params)
+	query += filter
 
-	rows, err := b.db.Query(context.Background(), rquery, pArr...)
+	rows, err := b.db.Query(c, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %w", err)
+		return nil, err
 	}
 	defer rows.Close()
 
-	for rows.Next() {
+	posts := make([]models.Post, 0)
 
+	for rows.Next() {
 		var (
 			created_at sql.NullTime
 			created_by sql.NullString
@@ -320,7 +437,6 @@ func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRe
 		post := models.Post{}
 
 		err := rows.Scan(
-			&resp.Count,
 			&post.ID,
 			&post.Description,
 			&post.Photos,
@@ -334,6 +450,7 @@ func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRe
 		if err != nil {
 			return nil, err
 		}
+
 		post.CreatedAt = created_at.Time.Format(time.RFC3339)
 		post.CreatedBy = created_by.String
 		if updated_at.Valid {
@@ -352,7 +469,23 @@ func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRe
 			post.DeletedBy = deleted_by.String
 		}
 
-		resp.Posts = append(resp.Posts, post)
+		posts = append(posts, post)
 	}
-	return resp, nil
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	count := 0
+	err = b.db.QueryRow(c, countQuery).Scan(&count)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &models.GetAllPost{
+		Posts: posts,
+		Count: count,
+	}
+
+	return response, nil
 }

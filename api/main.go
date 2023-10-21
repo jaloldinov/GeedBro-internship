@@ -33,6 +33,7 @@ func NewServer(h *handler.Handler) *gin.Engine {
 	r.GET("/post", helper.AuthMiddleWare, h.GetAllPost)
 	r.PUT("/post/:id", helper.AuthMiddleWare, h.UpdatePost)
 	r.DELETE("/post", helper.AuthMiddleWare, h.DeletePost)
+	r.GET("/my/post", helper.AuthMiddleWare, h.GetAllMyPost)
 
 	r.GET("/deleted-posts", helper.AuthMiddleWare, h.GetAllDeletedPost)
 

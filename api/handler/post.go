@@ -69,6 +69,55 @@ func (h *Handler) GetPost(c *gin.Context) {
 
 // ListPosts godoc
 // @Security ApiKeyAuth
+// @Router       /my/post [GET]
+// @Summary      GET  ALL POSTS
+// @Description  gets all post based on limit, page and search by postname
+// @Tags         POST
+// @Accept       json
+// @Produce      json
+// @Param   limit         query     int        false  "limit"          minimum(1)     default(10)
+// @Param   page         query     int        false  "page"          minimum(1)     default(1)
+// @Param   search         query     string        false  "search"
+// @Success      200  {object}  models.GetAllMyPostRequest
+// @Failure      400  {object}  response.ErrorResp
+// @Failure      404  {object}  response.ErrorResp
+// @Failure      500  {object}  response.ErrorResp
+func (h *Handler) GetAllMyPost(c *gin.Context) {
+
+	userId := c.Keys["user_info"]
+	fmt.Println(userId)
+
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil {
+		h.log.Error("error get page:", logger.Error(err))
+		c.JSON(http.StatusBadRequest, "invalid page param")
+		return
+	}
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil {
+		h.log.Error("error get limit:", logger.Error(err))
+		c.JSON(http.StatusBadRequest, "invalid page param")
+		return
+	}
+
+	search := c.Query("search")
+
+	resp, err := h.storage.Post().GetAllMyActivePost(c.Request.Context(), &models.GetAllMyPostRequest{
+		Page:    &page,
+		Limit:   &limit,
+		Search:  &search,
+		User_id: &search,
+	})
+	if err != nil {
+		h.log.Error("error:", logger.Error(err))
+		c.JSON(http.StatusInternalServerError, "internal server error")
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// ListPosts godoc
+// @Security ApiKeyAuth
 // @Router       /post [GET]
 // @Summary      GET  ALL POSTS
 // @Description  gets all post based on limit, page and search by postname
@@ -96,10 +145,11 @@ func (h *Handler) GetAllPost(c *gin.Context) {
 		return
 	}
 
+	username := c.Query("search")
 	resp, err := h.storage.Post().GetAllActivePost(c.Request.Context(), &models.GetAllPostRequest{
-		Page:   page,
-		Limit:  limit,
-		Search: c.Query("search"),
+		Page:   &page,
+		Limit:  &limit,
+		Search: &username,
 	})
 	if err != nil {
 		h.log.Error("error:", logger.Error(err))
@@ -202,11 +252,14 @@ func (h *Handler) GetAllDeletedPost(c *gin.Context) {
 		return
 	}
 
+	username := c.Query("search")
+
 	resp, err := h.storage.Post().GetAllDeletedPost(c.Request.Context(), &models.GetAllPostRequest{
-		Page:   page,
-		Limit:  limit,
-		Search: c.Query("search"),
+		Page:   &page,
+		Limit:  &limit,
+		Search: &username,
 	})
+
 	if err != nil {
 		h.log.Error("error:", logger.Error(err))
 		c.JSON(http.StatusInternalServerError, "internal server error")

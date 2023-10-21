@@ -30,6 +30,7 @@ type PostsI interface {
 	DeletePost(context.Context, *models.DeletePost) (string, error)
 
 	GetAllDeletedPost(context.Context, *models.GetAllPostRequest) (*models.GetAllPost, error)
+	GetAllMyActivePost(context.Context, *models.GetAllMyPostRequest) (*models.GetAllPost, error)
 }
 
 type LikesI interface {

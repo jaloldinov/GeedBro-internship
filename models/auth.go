@@ -14,6 +14,7 @@ type Login struct {
 }
 
 type LoginDataRespond struct {
+	User_id  string `json:"user_id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }

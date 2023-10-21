@@ -82,7 +82,7 @@ func (b *likeRepo) GetLikesCount(c context.Context, req string) (int, error) {
 	query := `
 		SELECT COUNT(*) AS like_count
 		FROM post_likes
-		WHERE post_id = $1
+		WHERE created_at IS NOT NULL AND post_id = $1
 	`
 
 	fmt.Println(req)

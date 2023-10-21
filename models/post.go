@@ -31,9 +31,16 @@ type UpdatePost struct {
 }
 
 type GetAllPostRequest struct {
-	Page   int    `json:"page"`
-	Limit  int    `json:"limit"`
-	Search string `json:"username"`
+	Page   *int    `json:"page"`
+	Limit  *int    `json:"limit"`
+	Search *string `json:"username"`
+}
+
+type GetAllMyPostRequest struct {
+	User_id *string `json:"user_id"`
+	Page    *int    `json:"page"`
+	Limit   *int    `json:"limit"`
+	Search  *string `json:"username"`
 }
 
 type GetAllPost struct {
