@@ -19,3 +19,14 @@ CREATE TABLE "post" (
   "deleted_at" timestamp,
   "deleted_by" varchar(36) REFERENCES "users" ("id")
 );
+
+CREATE TABLE "post_likes" (
+  "id" varchar(36) PRIMARY KEY,
+  "post_id" varchar(36) NOT NULL REFERENCES "post" ("id"),
+  "user_id" varchar(36) NOT NULL REFERENCES "users" ("id"),
+  "created_at" timestamp NOT NULL DEFAULT (now()),
+  "updated_at" timestamp,
+  "deleted_at" timestamp,
+  FOREIGN KEY ("user_id") REFERENCES "users"(id) ON DELETE CASCADE,
+  FOREIGN KEY ("post_id") REFERENCES "post"(id) ON DELETE CASCADE
+);

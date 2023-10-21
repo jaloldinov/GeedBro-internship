@@ -36,6 +36,10 @@ func NewServer(h *handler.Handler) *gin.Engine {
 
 	r.GET("/deleted-posts", helper.AuthMiddleWare, h.GetAllDeletedPost)
 
+	r.POST("/like", helper.AuthMiddleWare, h.CreateLike)
+	r.GET("/like-count/:post_id", h.GetLike)
+	r.DELETE("/like", helper.AuthMiddleWare, h.DeleteLike)
+
 	// Serve Swagger API documentation
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

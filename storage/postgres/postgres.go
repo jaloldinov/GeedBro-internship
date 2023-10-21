@@ -13,6 +13,7 @@ type store struct {
 	db    *pgxpool.Pool
 	users *userRepo
 	posts *postRepo
+	likes *likeRepo
 }
 
 func NewStorage(ctx context.Context, cfg config.Config) (storage.StorageI, error) {
@@ -52,4 +53,11 @@ func (b *store) Post() storage.PostsI {
 		b.posts = NewPostRepo(b.db)
 	}
 	return b.posts
+}
+
+func (b *store) Like() storage.LikesI {
+	if b.likes == nil {
+		b.likes = NewLikeRepo(b.db)
+	}
+	return b.likes
 }

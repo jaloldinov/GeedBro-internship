@@ -8,6 +8,7 @@ import (
 type StorageI interface {
 	User() UsersI
 	Post() PostsI
+	Like() LikesI
 }
 
 type UsersI interface {
@@ -29,4 +30,10 @@ type PostsI interface {
 	DeletePost(context.Context, *models.DeletePost) (string, error)
 
 	GetAllDeletedPost(context.Context, *models.GetAllPostRequest) (*models.GetAllPost, error)
+}
+
+type LikesI interface {
+	AddLike(context.Context, *models.CreateLike) error
+	DeleteLike(context.Context, *models.DeleteLike) (string, error)
+	GetLikesCount(context.Context, string) (int, error)
 }

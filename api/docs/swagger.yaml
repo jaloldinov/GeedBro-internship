@@ -1,4 +1,11 @@
 definitions:
+  models.CreateLike:
+    properties:
+      post_id:
+        type: string
+      user_id:
+        type: string
+    type: object
   models.CreatePost:
     properties:
       created_by:
@@ -15,6 +22,13 @@ definitions:
       password:
         type: string
       username:
+        type: string
+    type: object
+  models.DeleteLike:
+    properties:
+      post_id:
+        type: string
+      user_id:
         type: string
     type: object
   models.DeletePost:
@@ -286,6 +300,113 @@ paths:
       summary: GETS ALL DELETED USERS
       tags:
       - USER
+  /like:
+    delete:
+      consumes:
+      - application/json
+      description: DELETES LIKE BASED ON user_id and post_id
+      parameters:
+      - description: like data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeleteLike'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
+      summary: DELETE LIKE
+      tags:
+      - LIKE
+    post:
+      consumes:
+      - application/json
+      description: addes like to existing like
+      parameters:
+      - description: like data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateLike'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
+      summary: CREATES LIKE
+      tags:
+      - LIKE
+  /like-count/{post_id}:
+    get:
+      consumes:
+      - application/json
+      description: gets likes count based on post id
+      parameters:
+      - description: post_id
+        format: uuid
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+      security:
+      - ApiKeyAuth: []
+      summary: GET LIKE BY ID
+      tags:
+      - LIKE
   /post:
     delete:
       consumes:
