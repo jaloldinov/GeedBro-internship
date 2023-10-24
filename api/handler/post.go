@@ -10,19 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CreatePost godoc
-// @Security ApiKeyAuth
-// @Router       /post [POST]
-// @Summary      CREATES POST
-// @Description  creates a new post based on the given postname amd password
-// @Tags         POST
-// @Accept       json
-// @Produce      json
-// @Param        data  body      models.CreatePost  true  "post data"
-// @Success      200  {string}  string
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) CreatePost(c *gin.Context) {
 	var post models.CreatePost
 	err := c.ShouldBindJSON(&post)
@@ -41,19 +28,6 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "created", "id": resp})
 }
 
-// GetPost godoc
-// @Security ApiKeyAuth
-// @Router       /post/{id} [GET]
-// @Summary      GET POST BY ID
-// @Description  gets the post by ID
-// @Tags         POST
-// @Accept       json
-// @Produce      json
-// @Param        id   path      string  true  "Post ID" format(uuid)
-// @Success      200  {object}  models.Post
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetPost(c *gin.Context) {
 	id := c.Param("id")
 
@@ -67,21 +41,6 @@ func (h *Handler) GetPost(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// ListPosts godoc
-// @Security ApiKeyAuth
-// @Router       /my/post [GET]
-// @Summary      GET  ALL POSTS
-// @Description  gets all post based on limit, page and search by postname
-// @Tags         POST
-// @Accept       json
-// @Produce      json
-// @Param   limit         query     int        false  "limit"          minimum(1)     default(10)
-// @Param   page         query     int        false  "page"          minimum(1)     default(1)
-// @Param   search         query     string        false  "search"
-// @Success      200  {object}  models.GetAllMyPostRequest
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetAllMyPost(c *gin.Context) {
 
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -112,21 +71,6 @@ func (h *Handler) GetAllMyPost(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// ListPosts godoc
-// @Security ApiKeyAuth
-// @Router       /post [GET]
-// @Summary      GET  ALL POSTS
-// @Description  gets all post based on limit, page and search by postname
-// @Tags         POST
-// @Accept       json
-// @Produce      json
-// @Param   limit         query     int        false  "limit"          minimum(1)     default(10)
-// @Param   page         query     int        false  "page"          minimum(1)     default(1)
-// @Param   search         query     string        false  "search"
-// @Success      200  {object}  models.GetAllPost
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetAllPost(c *gin.Context) {
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {
@@ -155,19 +99,6 @@ func (h *Handler) GetAllPost(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// UpdatePost godoc
-// @Security ApiKeyAuth
-// @Router       /post/{id} [PUT]
-// @Summary      UPDATES POST BY ID
-// @Description  UPDATES POST BASED ON GIVEN DATA AND ID
-// @Tags         POST
-// @Accept       json
-// @Produce      json
-// @Param        data  body      models.UpdatePost  true  "post data"
-// @Success      200  {string}  string
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) UpdatePost(c *gin.Context) {
 	var post models.UpdatePost
 	err := c.ShouldBind(&post)
@@ -187,19 +118,6 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success", "updated post id": resp})
 }
 
-// DeletePost godoc
-// @Security ApiKeyAuth
-// @Router       /post [DELETE]
-// @Summary      DELETE POST BY ID
-// @Description  DELETES POST BASED ON ID
-// @Tags         POST
-// @Accept       json
-// @Produce      json
-// @Param        data  body      models.DeletePost  true  "post data"
-// @Success      200  {string}  string
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) DeletePost(c *gin.Context) {
 	var post models.DeletePost
 	err := c.ShouldBindJSON(&post)
@@ -219,21 +137,6 @@ func (h *Handler) DeletePost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success", "deleted post id": resp})
 }
 
-// ListPosts godoc
-// @Security ApiKeyAuth
-// @Router       /deleted-posts [GET]
-// @Summary      GETS ALL DELETED POSTS
-// @Description  gets all post based on limit, page and search by postname
-// @Tags         POST
-// @Accept       json
-// @Produce      json
-// @Param   limit         query     int        false  "limit"          minimum(1)     default(10)
-// @Param   page         query     int        false  "page"          minimum(1)     default(1)
-// @Param   search         query     string        false  "search"
-// @Success      200  {object}  models.GetAllPost
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetAllDeletedPost(c *gin.Context) {
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {

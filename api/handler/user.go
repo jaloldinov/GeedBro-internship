@@ -11,19 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CreateUser godoc
-// @Security ApiKeyAuth
-// @Router       /user [POST]
-// @Summary      CREATES USER
-// @Description  creates a new user based on the given username amd password
-// @Tags         USER
-// @Accept       json
-// @Produce      json
-// @Param        data  body      models.CreateUser  true  "user data"
-// @Success      200  {string}  string
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) CreateUser(c *gin.Context) {
 	var user models.CreateUser
 	err := c.ShouldBindJSON(&user)
@@ -50,19 +37,6 @@ func (h *Handler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "created", "id": resp})
 }
 
-// GetUser godoc
-// @Security ApiKeyAuth
-// @Router       /user/{id} [GET]
-// @Summary      GET USER BY ID
-// @Description  gets the user by ID
-// @Tags         USER
-// @Accept       json
-// @Produce      json
-// @Param        id   path      string  true  "User ID" format(uuid)
-// @Success      200  {object}  models.User
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
@@ -76,21 +50,6 @@ func (h *Handler) GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// ListUsers godoc
-// @Security ApiKeyAuth
-// @Router       /user [GET]
-// @Summary      GET  ALL USERS
-// @Description  gets all user based on limit, page and search by username
-// @Tags         USER
-// @Accept       json
-// @Produce      json
-// @Param   limit         query     int        false  "limit"          minimum(1)     default(10)
-// @Param   page         query     int        false  "page"          minimum(1)     default(1)
-// @Param   search         query     string        false  "search"
-// @Success      200  {object}  models.GetAllUser
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetAllUser(c *gin.Context) {
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {
@@ -118,19 +77,6 @@ func (h *Handler) GetAllUser(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// UpdateUser godoc
-// @Security ApiKeyAuth
-// @Router       /user/{id} [PUT]
-// @Summary      UPDATES USER BY ID
-// @Description  UPDATES USER BASED ON GIVEN DATA AND ID
-// @Tags         USER
-// @Accept       json
-// @Produce      json
-// @Param        data  body      models.UpdateUser  true  "user data"
-// @Success      200  {string}  string
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) UpdateUser(c *gin.Context) {
 	var user models.UpdateUser
 	err := c.ShouldBind(&user)
@@ -150,19 +96,6 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success", "updated user id": resp})
 }
 
-// DeleteUser godoc
-// @Security ApiKeyAuth
-// @Router       /user/{id} [DELETE]
-// @Summary      DELETE USER BY ID
-// @Description  DELETES USER BASED ON ID
-// @Tags         USER
-// @Accept       json
-// @Produce      json
-// @Param        id    path     string  true  "id of user" format(uuid)
-// @Success      200  {string}  string
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 
@@ -176,21 +109,6 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success", "deleted user id": resp})
 }
 
-// ListUsers godoc
-// @Security ApiKeyAuth
-// @Router       /deleted-users [GET]
-// @Summary      GETS ALL DELETED USERS
-// @Description  gets all user based on limit, page and search by username
-// @Tags         USER
-// @Accept       json
-// @Produce      json
-// @Param   limit         query     int        false  "limit"          minimum(1)     default(10)
-// @Param   page         query     int        false  "page"          minimum(1)     default(1)
-// @Param   search         query     string        false  "search"
-// @Success      200  {object}  models.GetAllUser
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) GetAllDeletedUser(c *gin.Context) {
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {

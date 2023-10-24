@@ -10,12 +10,13 @@ import (
 )
 
 type store struct {
-	db       *pgxpool.Pool
-	users    *userRepo
-	posts    *postRepo
-	likes    *likeRepo
-	files    *fileRepo
-	comments *commentRepo
+	db           *pgxpool.Pool
+	users        *userRepo
+	posts        *postRepo
+	likes        *likeRepo
+	files        *fileRepo
+	comments     *commentRepo
+	commentLikes *commentLikeRepo
 }
 
 func NewStorage(ctx context.Context, cfg config.Config) (storage.StorageI, error) {
@@ -76,4 +77,11 @@ func (b *store) Comment() storage.PostCommentsI {
 		b.comments = NewCommentRepo(b.db)
 	}
 	return b.comments
+}
+
+func (b *store) CommentLike() storage.CommentLikeI {
+	if b.commentLikes == nil {
+		b.commentLikes = NewCommentLikeRepo(b.db)
+	}
+	return b.commentLikes
 }

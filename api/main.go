@@ -55,6 +55,11 @@ func NewServer(h *handler.Handler) *gin.Engine {
 	r.PUT("/comment", helper.AuthMiddleWare, h.UpdateComment)
 	r.DELETE("/comment/:id", helper.AuthMiddleWare, h.DeleteComment)
 
+	// comment likes
+	r.POST("/comment-like", helper.AuthMiddleWare, h.CreateCommentLike)
+	r.GET("/comment-like/:comment_id", h.GetCommentLikes)
+	r.DELETE("/comment-like", helper.AuthMiddleWare, h.DeleteCommentLike)
+
 	// Serve Swagger API documentation
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

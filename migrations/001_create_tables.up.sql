@@ -25,7 +25,6 @@ CREATE TABLE "post_likes" (
   "post_id" varchar(36) NOT NULL REFERENCES "post" ("id") ON DELETE CASCADE,
   "user_id" varchar(36) NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "created_at" timestamp NOT NULL DEFAULT NOW(),
-  "updated_at" timestamp,
   "deleted_at" timestamp
 );
 
@@ -49,4 +48,13 @@ CREATE TABLE "post_comments" (
   "updated_by" varchar(36) REFERENCES "users" ("id"),
   "deleted_at" timestamp,
   "deleted_by" varchar(36) REFERENCES "users" ("id")
+);
+
+CREATE TABLE "comment_likes" (
+  "id" varchar(36) PRIMARY KEY,
+  "comment_id" varchar(36) NOT NULL REFERENCES "post_comments" ("id") ON DELETE CASCADE,
+  "user_id" varchar(36) NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "created_at" timestamp NOT NULL DEFAULT NOW(),
+  "updated_at" timestamp,
+  "is_active" bool DEFAULT true
 );

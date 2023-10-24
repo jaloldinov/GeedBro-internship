@@ -9,16 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) CreateLike(c *gin.Context) {
-	var like models.CreateLike
-	err := c.ShouldBindJSON(&like)
+func (h *Handler) CreateCommentLike(c *gin.Context) {
+
+	var like models.CreateCommentLike
+
+	err := c.ShouldBind(&like)
 	if err != nil {
 		h.log.Error("error while binding:", logger.Error(err))
 		c.JSON(http.StatusBadRequest, "invalid body")
 		return
 	}
 
-	err = h.storage.Like().AddLike(c.Request.Context(), &like)
+	err = h.storage.CommentLike().AddLike(c, &like)
 	if err != nil {
 		fmt.Println("error Like Create:", err.Error())
 		c.JSON(http.StatusInternalServerError, "internal server error")
@@ -27,30 +29,31 @@ func (h *Handler) CreateLike(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "like added"})
 }
 
-func (h *Handler) GetLike(c *gin.Context) {
-	postId := c.Param("post_id")
-	fmt.Println(postId)
+func (h *Handler) GetCommentLikes(c *gin.Context) {
 
-	resp, err := h.storage.Like().GetLikesCount(c.Request.Context(), postId)
+	comment_id := c.Param("comment_id")
+
+	count, err := h.storage.CommentLike().GetLikesCount(c, comment_id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, logger.Error(err))
-		fmt.Println("error Like Get:", err.Error())
+		fmt.Println("error comment like count:", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, gin.H{"count": count})
 }
 
-func (h *Handler) DeleteLike(c *gin.Context) {
-	var like models.DeleteLike
-	err := c.ShouldBind(&like)
+func (h *Handler) DeleteCommentLike(c *gin.Context) {
+	var comment_id models.DeleteCommentLike
+
+	err := c.ShouldBindJSON(&comment_id)
 	if err != nil {
 		h.log.Error("error while binding:", logger.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-
-	resp, err := h.storage.Like().DeleteLike(c.Request.Context(), &models.DeleteLike{UserId: like.UserId, PostId: like.PostId})
+	fmt.Println(comment_id)
+	resp, err := h.storage.CommentLike().DeleteLike(c, &models.DeleteCommentLike{CommentId: comment_id.CommentId})
 	if err != nil {
 		h.log.Error("error deleting like:", logger.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

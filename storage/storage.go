@@ -12,6 +12,7 @@ type StorageI interface {
 	Like() LikesI
 	File() UserFileUploadI
 	Comment() PostCommentsI
+	CommentLike() CommentLikeI
 }
 
 type UsersI interface {
@@ -53,4 +54,10 @@ type PostCommentsI interface {
 	GetPostComments(context.Context, *models.GetAllPostComments) (*models.GetAllCommentResponse, error)
 	UpdateComment(context.Context, *models.UpdateComment) (string, error)
 	DeleteComment(context.Context, *models.DeleteComment) (string, error)
+}
+
+type CommentLikeI interface {
+	AddLike(context.Context, *models.CreateCommentLike) error
+	DeleteLike(context.Context, *models.DeleteCommentLike) (string, error)
+	GetLikesCount(context.Context, string) (int, error)
 }

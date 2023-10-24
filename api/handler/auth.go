@@ -13,18 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// SignUp godoc
-// @Router       /auth/sign-up [POST]
-// @Summary      CREATES USER
-// @Description  CREATES USER BASED ON GIVEN DATA
-// @Tags         AUTH
-// @Accept       json
-// @Produce      json
-// @Param        data  body      models.CreateUser  true  "user data"
-// @Success      200  {string}  string
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) SignUp(c *gin.Context) {
 
 	var user models.CreateUser
@@ -52,18 +40,6 @@ func (h *Handler) SignUp(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "created", "id": resp})
 }
 
-// loginUser godoc
-// @Router       /auth/login [POST]
-// @Summary      auth
-// @Description  login
-// @Tags         AUTH
-// @Accept       json
-// @Produce      json
-// @Param        user    body   models.LoginRequest  true  "data of user"
-// @Success      200  {object}  models.LoginRespond
-// @Failure      400  {object}  response.ErrorResp
-// @Failure      404  {object}  response.ErrorResp
-// @Failure      500  {object}  response.ErrorResp
 func (h *Handler) Login(c *gin.Context) {
 	var req models.LoginRequest
 	err := c.ShouldBindJSON(&req)
