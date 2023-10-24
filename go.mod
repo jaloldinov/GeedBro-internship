@@ -9,6 +9,7 @@ require (
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.2
 	github.com/spf13/cast v1.5.1
 	github.com/streamingfast/logging v0.0.0-20230608130331-f22c91403091
 	github.com/swaggo/files v1.0.1

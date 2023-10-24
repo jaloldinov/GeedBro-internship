@@ -1092,18 +1092,7 @@ const docTemplate = `{
             }
         },
         "models.CreatePost": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "photos": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
+            "type": "object"
         },
         "models.CreateUser": {
             "type": "object",
@@ -1292,7 +1281,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "message": {
                     "type": "string"

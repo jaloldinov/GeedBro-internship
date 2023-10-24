@@ -202,14 +202,14 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 // @Failure      500  {object}  response.ErrorResp
 func (h *Handler) DeletePost(c *gin.Context) {
 	var post models.DeletePost
-	err := c.ShouldBind(&post)
+	err := c.ShouldBindJSON(&post)
 	if err != nil {
 		h.log.Error("error while binding:", logger.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	resp, err := h.storage.Post().DeletePost(c.Request.Context(), &models.DeletePost{Id: post.Id})
+	resp, err := h.storage.Post().DeletePost(c, &models.DeletePost{Id: post.Id})
 	if err != nil {
 		h.log.Error("error deleting post:", logger.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

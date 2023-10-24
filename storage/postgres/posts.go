@@ -379,8 +379,8 @@ func (b *postRepo) DeletePost(c context.Context, req *models.DeletePost) (resp s
 		context.Background(),
 		query,
 		userInfo.User_id,
-		req.Id,
 		userInfo.User_id,
+		req.Id,
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to update post: %w", err)

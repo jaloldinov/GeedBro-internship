@@ -7,13 +7,6 @@ definitions:
         type: string
     type: object
   models.CreatePost:
-    properties:
-      description:
-        type: string
-      photos:
-        items:
-          type: string
-        type: array
     type: object
   models.CreateUser:
     properties:
@@ -136,7 +129,7 @@ definitions:
   response.ErrorResp:
     properties:
       code:
-        type: string
+        type: integer
       message:
         type: string
     type: object

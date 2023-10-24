@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"auth/api/response"
 	"auth/models"
 	"context"
 )
@@ -9,6 +10,8 @@ type StorageI interface {
 	User() UsersI
 	Post() PostsI
 	Like() LikesI
+	File() UserFileUploadI
+	Comment() PostCommentsI
 }
 
 type UsersI interface {
@@ -37,4 +40,17 @@ type LikesI interface {
 	AddLike(context.Context, *models.CreateLike) error
 	DeleteLike(context.Context, *models.DeleteLike) (string, error)
 	GetLikesCount(context.Context, string) (int, error)
+}
+
+type UserFileUploadI interface {
+	CreateFile(context.Context, *models.CreateFile) (*models.CreateFileResponse, *response.ErrorResp)
+	CreateFiles(context.Context, *models.CreateFiles) (*models.CreateFilesResponse, *response.ErrorResp)
+}
+
+type PostCommentsI interface {
+	CreateComment(context.Context, *models.CreateComment) (string, error)
+	GetComment(context.Context, *models.IdRequest) (*models.Comment, error)
+	GetPostComments(context.Context, *models.GetAllPostComments) (*models.GetAllCommentResponse, error)
+	UpdateComment(context.Context, *models.UpdateComment) (string, error)
+	DeleteComment(context.Context, *models.DeleteComment) (string, error)
 }
