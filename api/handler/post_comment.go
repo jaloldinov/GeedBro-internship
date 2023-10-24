@@ -61,12 +61,13 @@ func (h *Handler) GetPostComments(c *gin.Context) {
 		return
 	}
 
-	search := c.Query("post_id")
+	post_id := c.Param("post_id")
 
+	fmt.Println(post_id)
 	resp, err := h.storage.Comment().GetPostComments(c, &models.GetAllPostComments{
 		Page:   &page,
 		Limit:  &limit,
-		PostId: &search,
+		PostId: &post_id,
 	})
 	if err != nil {
 		h.log.Error("error:", logger.Error(err))

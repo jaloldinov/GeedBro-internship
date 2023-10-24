@@ -61,6 +61,7 @@ func afterRequest(c *gin.Context) {
 // AuthMiddleWare is a middleware function for authentication
 func AuthMiddleWare(c *gin.Context) {
 	token := c.GetHeader("Authorization")
+	// Request.Header
 
 	if token == "" {
 		c.JSON(http.StatusUnauthorized, map[string]interface{}{
