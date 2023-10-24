@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"auth/models"
+	"auth/pkg/helper"
 	"context"
 	"errors"
 	"fmt"
@@ -23,12 +24,14 @@ func NewLikeRepo(db *pgxpool.Pool) *likeRepo {
 
 func (b *likeRepo) AddLike(c context.Context, req *models.CreateLike) error {
 	// Check if the user has already liked the post
+	userInfo := c.Value("user_info").(helper.TokenInfo)
+
 	query := `
 		SELECT COUNT(*) FROM post_likes WHERE post_id = $1 AND user_id = $2
 	`
 
 	count := 0
-	err := b.db.QueryRow(c, query, req.PostId, req.UserId).Scan(&count)
+	err := b.db.QueryRow(c, query, req.PostId, userInfo.User_id).Scan(&count)
 	if err != nil {
 		return fmt.Errorf("failed to check existing like: %w", err)
 	}
@@ -53,6 +56,8 @@ func (b *likeRepo) AddLike(c context.Context, req *models.CreateLike) error {
 }
 
 func (b *likeRepo) DeleteLike(c context.Context, req *models.DeleteLike) (resp string, err error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
+
 	query := `
 	 	UPDATE "post_likes" 
 		SET 
@@ -64,7 +69,7 @@ func (b *likeRepo) DeleteLike(c context.Context, req *models.DeleteLike) (resp s
 	result, err := b.db.Exec(
 		context.Background(),
 		query,
-		req.UserId,
+		userInfo.User_id,
 		req.PostId,
 	)
 	if err != nil {
@@ -85,7 +90,6 @@ func (b *likeRepo) GetLikesCount(c context.Context, req string) (int, error) {
 		WHERE created_at IS NOT NULL AND post_id = $1
 	`
 
-	fmt.Println(req)
 	count := 0
 	err := b.db.QueryRow(c, query, req).Scan(&count)
 	if err != nil {

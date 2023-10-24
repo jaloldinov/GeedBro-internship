@@ -167,6 +167,7 @@ func (b *userRepo) GetAllActiveUser(c context.Context, req *models.GetAllUserReq
 }
 
 func (b *userRepo) UpdateUser(c context.Context, req *models.UpdateUser) (string, error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
 
 	query := `
 			UPDATE users 
@@ -183,7 +184,7 @@ func (b *userRepo) UpdateUser(c context.Context, req *models.UpdateUser) (string
 		query,
 		req.Username,
 		req.Password,
-		req.ID,
+		userInfo.User_id,
 	)
 
 	if err != nil {
@@ -198,6 +199,8 @@ func (b *userRepo) UpdateUser(c context.Context, req *models.UpdateUser) (string
 }
 
 func (b *userRepo) DeleteUser(c context.Context, req *models.IdRequest) (resp string, err error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
+
 	query := `
 	 	UPDATE "users" 
 		SET 
@@ -211,7 +214,7 @@ func (b *userRepo) DeleteUser(c context.Context, req *models.IdRequest) (resp st
 		context.Background(),
 		query,
 		false,
-		req.Id,
+		userInfo.User_id,
 	)
 	if err != nil {
 		return "", err
