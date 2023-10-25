@@ -21,6 +21,8 @@ func (h *Handler) CreateComment(ctx *gin.Context) {
 		return
 	}
 
+	comment.PostId = ctx.Param("post_id")
+
 	resp, err := h.storage.Comment().CreateComment(ctx, &comment)
 	if err != nil {
 		fmt.Println("error comment create:", err.Error())
@@ -32,10 +34,9 @@ func (h *Handler) CreateComment(ctx *gin.Context) {
 }
 
 // get one comment from post
-func (h *Handler) GetComment(c *gin.Context) {
-	id := c.Param("id")
+func (h *Handler) GetMyComments(c *gin.Context) {
 
-	resp, err := h.storage.Comment().GetComment(c, &models.IdRequest{Id: id})
+	resp, err := h.storage.Comment().GetMyComments(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		fmt.Println("error comment get:", err.Error())

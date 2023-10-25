@@ -1,7 +1,6 @@
 package models
 
 type CreateLike struct {
-	UserId string `json:"user_id"`
 	PostId string `json:"post_id"`
 }
 
@@ -15,6 +14,5 @@ type Like struct {
 }
 
 type DeleteLike struct {
-	UserId string `json:"user_id"`
 	PostId string `json:"post_id"`
 }

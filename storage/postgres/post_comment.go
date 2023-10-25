@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -53,58 +52,70 @@ func (r *commentRepo) CreateComment(ctx context.Context, req *models.CreateComme
 	return id, nil
 }
 
-// get one comment based on given comment_id
-func (b *commentRepo) GetComment(c context.Context, req *models.IdRequest) (resp *models.Comment, err error) {
-
-	var (
-		created_at sql.NullTime
-		created_by sql.NullString
-		updated_at sql.NullTime
-		updated_by sql.NullString
-	)
+func (b *commentRepo) GetMyComments(c context.Context) (resp *models.GetAllCommentResponse, err error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
 
 	query := `
-			SELECT 
-				"id", 
-				"post_id", 
-				"comment", 
-				"created_at",
-				"created_by",
-				"updated_at",
-				"updated_by"
-			FROM "post_comments" 
-				WHERE 
-				"deleted_at" IS NULL AND
-			    "id"=$1`
+    SELECT
+        pc."id",
+        pc."post_id",
+        pc."comment",
+        (SELECT COUNT(*)
+            FROM "comment_likes" cl
+            WHERE cl."comment_id" = pc."id"
+        ) AS "likes_count",
+        pc."created_at"
+    FROM "post_comments" pc
+    WHERE
+        pc."deleted_at" IS NULL
+        AND pc."created_by" = $1
+	GROUP BY pc.id ORDER BY created_at desc
+`
+	countQuery := `SELECT COUNT(1) AS counts FROM "post_comments" WHERE "deleted_at" IS NULL AND "created_by" = $1`
 
-	comment := models.Comment{}
-	err = b.db.QueryRow(context.Background(), query, req.Id).Scan(
-		&comment.ID,
-		&comment.PostId,
-		&comment.Comment,
-		&created_at,
-		&created_by,
-		&updated_at,
-		&updated_by,
-	)
+	rows, err := b.db.Query(c, query, userInfo.User_id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("comment not found")
+		return nil, err
+	}
+	defer rows.Close()
+
+	comments := make([]models.Comment, 0)
+	for rows.Next() {
+		var created_at sql.NullTime
+
+		comment := models.Comment{}
+
+		err := rows.Scan(
+			&comment.ID,
+			&comment.PostId,
+			&comment.Comment,
+			&comment.LikeCount,
+			&created_at,
+		)
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("failed to get comment: %w", err)
+
+		comment.CreatedAt = created_at.Time.Format(time.RFC3339)
+
+		comments = append(comments, comment)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
-	comment.CreatedAt = created_at.Time.Format(time.RFC3339)
-	comment.CreatedBy = created_by.String
-	if updated_at.Valid {
-		comment.UpdatedAt = updated_at.Time.Format(time.RFC3339)
+	count := 0
+	err = b.db.QueryRow(c, countQuery, userInfo.User_id).Scan(&count)
+	if err != nil {
+		return nil, err
 	}
 
-	if updated_by.Valid {
-		comment.UpdatedBy = updated_by.String
+	response := &models.GetAllCommentResponse{
+		Comments: comments,
+		Count:    count,
 	}
 
-	return &comment, nil
+	return response, nil
 }
 
 // get all post comments
@@ -117,10 +128,12 @@ func (b *commentRepo) GetPostComments(c context.Context, req *models.GetAllPostC
 				"id", 
 				"post_id", 
 				"comment", 
-				"created_at",
-				"created_by",
-				"updated_at",
-				"updated_by"
+				(SELECT COUNT(*) 
+				FROM "comment_likes"
+				WHERE "deleted_at" IS  NULL
+				AND "comment_id" = post_comments."id"
+			) AS "likes_count",
+				"created_at"
 		FROM "post_comments"
 	`
 
@@ -128,7 +141,7 @@ func (b *commentRepo) GetPostComments(c context.Context, req *models.GetAllPostC
 
 	if *req.Page != 0 && *req.Limit != 0 {
 		offset := (*req.Page - 1) * (*req.Limit)
-		filter += fmt.Sprintf(" LIMIT %d OFFSET %d", *req.Limit, offset)
+		filter += fmt.Sprintf(" ORDER BY created_at desc LIMIT %d OFFSET %d ", *req.Limit, offset)
 	}
 
 	query += filter
@@ -142,36 +155,22 @@ func (b *commentRepo) GetPostComments(c context.Context, req *models.GetAllPostC
 	comments := make([]models.Comment, 0)
 
 	for rows.Next() {
-		var (
-			created_at sql.NullTime
-			created_by sql.NullString
-			updated_at sql.NullTime
-			updated_by sql.NullString
-		)
+		var created_at sql.NullTime
+
 		comment := models.Comment{}
 
 		err := rows.Scan(
 			&comment.ID,
 			&comment.PostId,
 			&comment.Comment,
+			&comment.LikeCount,
 			&created_at,
-			&created_by,
-			&updated_at,
-			&updated_by,
 		)
 		if err != nil {
 			return nil, err
 		}
 
 		comment.CreatedAt = created_at.Time.Format(time.RFC3339)
-		comment.CreatedBy = created_by.String
-		if updated_at.Valid {
-			comment.UpdatedAt = updated_at.Time.Format(time.RFC3339)
-		}
-
-		if updated_by.Valid {
-			comment.UpdatedBy = updated_by.String
-		}
 
 		comments = append(comments, comment)
 	}

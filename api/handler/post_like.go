@@ -18,7 +18,7 @@ func (h *Handler) CreateLike(c *gin.Context) {
 		return
 	}
 
-	err = h.storage.Like().AddLike(c.Request.Context(), &like)
+	err = h.storage.Like().AddLike(c, &like)
 	if err != nil {
 		fmt.Println("error Like Create:", err.Error())
 		c.JSON(http.StatusInternalServerError, "internal server error")
@@ -31,7 +31,7 @@ func (h *Handler) GetLike(c *gin.Context) {
 	postId := c.Param("post_id")
 	fmt.Println(postId)
 
-	resp, err := h.storage.Like().GetLikesCount(c.Request.Context(), postId)
+	resp, err := h.storage.Like().GetLikesCount(c, postId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, logger.Error(err))
 		fmt.Println("error Like Get:", err.Error())
@@ -50,7 +50,7 @@ func (h *Handler) DeleteLike(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.storage.Like().DeleteLike(c.Request.Context(), &models.DeleteLike{UserId: like.UserId, PostId: like.PostId})
+	resp, err := h.storage.Like().DeleteLike(c, &models.DeleteLike{PostId: like.PostId})
 	if err != nil {
 		h.log.Error("error deleting like:", logger.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

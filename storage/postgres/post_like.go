@@ -47,7 +47,7 @@ func (b *likeRepo) AddLike(c context.Context, req *models.CreateLike) error {
 		VALUES ($1, $2, $3, NOW())
 	`
 
-	_, err = b.db.Exec(c, insertQuery, uuid.NewString(), req.PostId, req.UserId)
+	_, err = b.db.Exec(c, insertQuery, uuid.NewString(), req.PostId, userInfo.User_id)
 	if err != nil {
 		return fmt.Errorf("failed to add like: %w", err)
 	}

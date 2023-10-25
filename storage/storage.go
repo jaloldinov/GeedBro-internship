@@ -50,7 +50,7 @@ type UserFileUploadI interface {
 
 type PostCommentsI interface {
 	CreateComment(context.Context, *models.CreateComment) (string, error)
-	GetComment(context.Context, *models.IdRequest) (*models.Comment, error)
+	GetMyComments(context.Context) (*models.GetAllCommentResponse, error)
 	GetPostComments(context.Context, *models.GetAllPostComments) (*models.GetAllCommentResponse, error)
 	UpdateComment(context.Context, *models.UpdateComment) (string, error)
 	DeleteComment(context.Context, *models.DeleteComment) (string, error)

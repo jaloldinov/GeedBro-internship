@@ -23,10 +23,8 @@ type Comment struct {
 	ID        string `json:"id"`
 	PostId    string `json:"post_id"`
 	Comment   string `json:"comment"`
+	LikeCount int    `json:"likes_count"`
 	CreatedAt string `json:"created_at"`
-	CreatedBy string `json:"created_by"`
-	UpdatedAt string `json:"updated_at"`
-	UpdatedBy string `json:"updated_by"`
 }
 
 type DeleteComment struct {

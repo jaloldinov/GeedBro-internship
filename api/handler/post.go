@@ -107,8 +107,9 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
+	post.ID = c.Param("post_id")
 
-	resp, err := h.storage.Post().UpdatePost(c.Request.Context(), &post)
+	resp, err := h.storage.Post().UpdatePost(c, &post)
 	if err != nil {
 		h.log.Error("error Post Update:", logger.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update post"})
@@ -120,12 +121,7 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 
 func (h *Handler) DeletePost(c *gin.Context) {
 	var post models.DeletePost
-	err := c.ShouldBindJSON(&post)
-	if err != nil {
-		h.log.Error("error while binding:", logger.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
+	post.Id = c.Param("post_id")
 
 	resp, err := h.storage.Post().DeletePost(c, &models.DeletePost{Id: post.Id})
 	if err != nil {

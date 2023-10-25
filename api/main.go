@@ -26,14 +26,16 @@ func NewServer(h *handler.Handler) *gin.Engine {
 	r.GET("/deleted-users", helper.AuthMiddleWare, h.GetAllDeletedUser)
 	r.GET("/deleted-posts", helper.AuthMiddleWare, h.GetAllDeletedPost)
 
+	// posts
 	r.POST("/post", helper.AuthMiddleWare, h.CreatePost)
-	r.GET("/post/:id", helper.AuthMiddleWare, h.GetPost)
-	r.GET("/post", h.GetAllPost)
-	r.PUT("/post/:id", helper.AuthMiddleWare, h.UpdatePost)
-	r.DELETE("/post", helper.AuthMiddleWare, h.DeletePost)
+	r.GET("/post/:post_id", helper.AuthMiddleWare, h.GetPost)
+	r.GET("/posts/all", h.GetAllPost)
+	r.PUT("/post/:post_id", helper.AuthMiddleWare, h.UpdatePost)
+	r.DELETE("/post/:post_id", helper.AuthMiddleWare, h.DeletePost)
 
-	r.GET("/my/post", helper.AuthMiddleWare, h.GetAllMyPost)
+	r.GET("/my/posts", helper.AuthMiddleWare, h.GetAllMyPost)
 
+	// post_likes
 	r.POST("/like", helper.AuthMiddleWare, h.CreateLike)
 	r.GET("/like-count/:post_id", h.GetLike)
 	r.DELETE("/like", helper.AuthMiddleWare, h.DeleteLike)
@@ -43,9 +45,9 @@ func NewServer(h *handler.Handler) *gin.Engine {
 	r.POST("/files/upload", helper.AuthMiddleWare, h.CreateFiles)
 
 	// post comment section
-	r.POST("/comment", helper.AuthMiddleWare, h.CreateComment)
-	r.GET("/comment/:id", helper.AuthMiddleWare, h.GetComment)
-	r.GET("/comments/:post_id", h.GetPostComments)
+	r.POST("/comment/:post_id", helper.AuthMiddleWare, h.CreateComment)
+	r.GET("/my/comments", helper.AuthMiddleWare, h.GetMyComments)
+	r.GET("/post/comments/:post_id", h.GetPostComments)
 	r.PUT("/comment", helper.AuthMiddleWare, h.UpdateComment)
 	r.DELETE("/comment/:id", helper.AuthMiddleWare, h.DeleteComment)
 

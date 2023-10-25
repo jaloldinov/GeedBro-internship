@@ -52,43 +52,32 @@ func (b *postRepo) CreatePost(c context.Context, req *models.CreatePost) (string
 }
 
 func (b *postRepo) GetPost(c context.Context, req *models.IdRequest) (resp *models.Post, err error) {
-
-	var (
-		created_at sql.NullTime
-		created_by sql.NullString
-		updated_at sql.NullTime
-		updated_by sql.NullString
-		deleted_at sql.NullTime
-		deleted_by sql.NullString
-	)
+	var created_at sql.NullString
 
 	query := `
-			SELECT 
-				"id", 
-				"description", 
-				"photos", 
-				"created_at",
-				"created_by",
-				"updated_at",
-				"updated_by",
-				"deleted_at",
-				"deleted_by"
-			FROM "post" 
-				WHERE 
-				"deleted_at" IS NULL AND
-			    "id"=$1`
+		SELECT
+			p."id",
+			p."description",
+			p."photos",
+			p."created_at",
+			(SELECT COUNT(*) 
+				FROM "post_likes"
+				WHERE "deleted_at" IS NULL
+				AND "post_id" = p."id"
+			) AS "likes_count"
+		FROM "post" p
+		WHERE
+			p."deleted_at" IS NULL
+			AND p."id" = $1
+	`
 
 	post := models.Post{}
-	err = b.db.QueryRow(context.Background(), query, req.Id).Scan(
+	err = b.db.QueryRow(c, query, req.Id).Scan(
 		&post.ID,
 		&post.Description,
 		&post.Photos,
 		&created_at,
-		&created_by,
-		&updated_at,
-		&updated_by,
-		&deleted_at,
-		&deleted_by,
+		&post.LikeCount,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -97,23 +86,7 @@ func (b *postRepo) GetPost(c context.Context, req *models.IdRequest) (resp *mode
 		return nil, fmt.Errorf("failed to get post: %w", err)
 	}
 
-	post.CreatedAt = created_at.Time.Format(time.RFC3339)
-	post.CreatedBy = created_by.String
-	if updated_at.Valid {
-		post.UpdatedAt = updated_at.Time.Format(time.RFC3339)
-	}
-
-	if updated_by.Valid {
-		post.UpdatedBy = updated_by.String
-	}
-
-	if deleted_at.Valid {
-		post.DeletedAt = deleted_at.Time.Format(time.RFC3339)
-	}
-
-	if deleted_by.Valid {
-		post.DeletedBy = deleted_by.String
-	}
+	post.CreatedAt = created_at.String
 
 	return &post, nil
 }
@@ -126,13 +99,13 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 			"id", 
 			"description", 
 			"photos", 
-			"created_at",
-			"created_by",
-			"updated_at",
-			"updated_by",
-			"deleted_at",
-			"deleted_by"
-		FROM "post"
+			(SELECT COUNT(*) 
+				FROM "post_likes"
+				WHERE "deleted_at" IS NULL
+				AND "post_id" = p."id"
+			) AS "likes_count",
+			"created_at"
+		FROM "post" p
 	`
 
 	countQuery := `SELECT count(*) FROM post WHERE deleted_at IS NULL `
@@ -144,7 +117,7 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 
 	if *req.Page != 0 && *req.Limit != 0 {
 		offset := (*req.Page - 1) * (*req.Limit)
-		filter += fmt.Sprintf(" LIMIT %d OFFSET %d", *req.Limit, offset)
+		filter += fmt.Sprintf(" ORDER BY created_at desc LIMIT %d OFFSET %d", *req.Limit, offset)
 	}
 
 	query += filter
@@ -159,12 +132,7 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 
 	for rows.Next() {
 		var (
-			created_at sql.NullTime
-			created_by sql.NullString
-			updated_at sql.NullTime
-			updated_by sql.NullString
-			deleted_at sql.NullTime
-			deleted_by sql.NullString
+			created_at sql.NullString
 		)
 		post := models.Post{}
 
@@ -172,34 +140,14 @@ func (b *postRepo) GetAllActivePost(c context.Context, req *models.GetAllPostReq
 			&post.ID,
 			&post.Description,
 			&post.Photos,
+			&post.LikeCount,
 			&created_at,
-			&created_by,
-			&updated_at,
-			&updated_by,
-			&deleted_at,
-			&deleted_by,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		post.CreatedAt = created_at.Time.Format(time.RFC3339)
-		post.CreatedBy = created_by.String
-		if updated_at.Valid {
-			post.UpdatedAt = updated_at.Time.Format(time.RFC3339)
-		}
-
-		if updated_by.Valid {
-			post.UpdatedBy = updated_by.String
-		}
-
-		if deleted_at.Valid {
-			post.DeletedAt = deleted_at.Time.Format(time.RFC3339)
-		}
-
-		if deleted_by.Valid {
-			post.DeletedBy = deleted_by.String
-		}
+		post.CreatedAt = created_at.String
 
 		posts = append(posts, post)
 	}
@@ -232,13 +180,13 @@ func (b *postRepo) GetAllMyActivePost(c context.Context, req *models.GetAllMyPos
 			"id", 
 			"description", 
 			"photos", 
-			"created_at",
-			"created_by",
-			"updated_at",
-			"updated_by",
-			"deleted_at",
-			"deleted_by"
-		FROM "post"
+			(SELECT COUNT(*) 
+				FROM "post_likes"
+				WHERE "deleted_at" IS NULL
+				AND "post_id" = post."id"
+			) AS "likes_count",
+			"created_at"
+		FROM "post" 
 	`
 
 	countQuery := fmt.Sprintf(`SELECT count(*) FROM post WHERE deleted_at IS NULL AND created_by = '%s'`, userInfo.User_id)
@@ -250,7 +198,7 @@ func (b *postRepo) GetAllMyActivePost(c context.Context, req *models.GetAllMyPos
 
 	if *req.Page != 0 && *req.Limit != 0 {
 		offset := (*req.Page - 1) * (*req.Limit)
-		filter += fmt.Sprintf(" LIMIT %d OFFSET %d", *req.Limit, offset)
+		filter += fmt.Sprintf(" ORDER BY created_at desc LIMIT %d OFFSET %d", *req.Limit, offset)
 	}
 
 	query += filter
@@ -264,48 +212,22 @@ func (b *postRepo) GetAllMyActivePost(c context.Context, req *models.GetAllMyPos
 	posts := make([]models.Post, 0)
 
 	for rows.Next() {
-		var (
-			created_at sql.NullTime
-			created_by sql.NullString
-			updated_at sql.NullTime
-			updated_by sql.NullString
-			deleted_at sql.NullTime
-			deleted_by sql.NullString
-		)
+		var created_at sql.NullString
+
 		post := models.Post{}
 
 		err := rows.Scan(
 			&post.ID,
 			&post.Description,
 			&post.Photos,
+			&post.LikeCount,
 			&created_at,
-			&created_by,
-			&updated_at,
-			&updated_by,
-			&deleted_at,
-			&deleted_by,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		post.CreatedAt = created_at.Time.Format(time.RFC3339)
-		post.CreatedBy = created_by.String
-		if updated_at.Valid {
-			post.UpdatedAt = updated_at.Time.Format(time.RFC3339)
-		}
-
-		if updated_by.Valid {
-			post.UpdatedBy = updated_by.String
-		}
-
-		if deleted_at.Valid {
-			post.DeletedAt = deleted_at.Time.Format(time.RFC3339)
-		}
-
-		if deleted_by.Valid {
-			post.DeletedBy = deleted_by.String
-		}
+		post.CreatedAt = created_at.String
 
 		posts = append(posts, post)
 	}
@@ -401,13 +323,13 @@ func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRe
 			"id", 
 			"description", 
 			"photos", 
-			"created_at",
-			"created_by",
-			"updated_at",
-			"updated_by",
-			"deleted_at",
-			"deleted_by"
-		FROM "post"
+			(SELECT COUNT(*) 
+				FROM "post_likes"
+				WHERE "deleted_at" IS NOT NULL
+				AND "post_id" = post."id"
+			) AS "likes_count",
+			"created_at"
+		FROM "post" 
 	`
 
 	countQuery := `SELECT count(*) FROM post WHERE deleted_at IS NOT NULL `
@@ -419,7 +341,7 @@ func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRe
 
 	if *req.Page != 0 && *req.Limit != 0 {
 		offset := (*req.Page - 1) * (*req.Limit)
-		filter += fmt.Sprintf(" LIMIT %d OFFSET %d", *req.Limit, offset)
+		filter += fmt.Sprintf(" ORDER BY created_at desc LIMIT %d OFFSET %d", *req.Limit, offset)
 	}
 
 	query += filter
@@ -435,11 +357,6 @@ func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRe
 	for rows.Next() {
 		var (
 			created_at sql.NullTime
-			created_by sql.NullString
-			updated_at sql.NullTime
-			updated_by sql.NullString
-			deleted_at sql.NullTime
-			deleted_by sql.NullString
 		)
 		post := models.Post{}
 
@@ -448,33 +365,12 @@ func (b *postRepo) GetAllDeletedPost(c context.Context, req *models.GetAllPostRe
 			&post.Description,
 			&post.Photos,
 			&created_at,
-			&created_by,
-			&updated_at,
-			&updated_by,
-			&deleted_at,
-			&deleted_by,
 		)
 		if err != nil {
 			return nil, err
 		}
 
 		post.CreatedAt = created_at.Time.Format(time.RFC3339)
-		post.CreatedBy = created_by.String
-		if updated_at.Valid {
-			post.UpdatedAt = updated_at.Time.Format(time.RFC3339)
-		}
-
-		if updated_by.Valid {
-			post.UpdatedBy = updated_by.String
-		}
-
-		if deleted_at.Valid {
-			post.DeletedAt = deleted_at.Time.Format(time.RFC3339)
-		}
-
-		if deleted_by.Valid {
-			post.DeletedBy = deleted_by.String
-		}
 
 		posts = append(posts, post)
 	}
