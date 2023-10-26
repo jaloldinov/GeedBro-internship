@@ -27,7 +27,7 @@ func (b *commentLikeRepo) AddLike(c context.Context, req *models.CreateCommentLi
 
 	// Check if the user has already liked the post
 	query := `
-		SELECT COUNT(*) FROM comment_likes WHERE comment_id = $1 AND user_id = $2
+		SELECT COUNT(id) FROM comment_likes WHERE comment_id = $1 AND user_id = $2
 	`
 
 	count := 0
@@ -43,8 +43,8 @@ func (b *commentLikeRepo) AddLike(c context.Context, req *models.CreateCommentLi
 
 	// User has not liked the post, add the new like
 	insertQuery := `
-		INSERT INTO "comment_likes" ("id", "comment_id", "user_id", "created_at", "updated_at")
-		VALUES ($1, $2, $3, NOW(), NOW())
+		INSERT INTO "comment_likes" ("id", "comment_id", "user_id", "created_at")
+		VALUES ($1, $2, $3, NOW())
 	`
 
 	_, err = b.db.Exec(c, insertQuery, uuid.NewString(), req.CommentId, userInfo.User_id)
@@ -62,7 +62,7 @@ func (b *commentLikeRepo) DeleteLike(c context.Context, req *models.DeleteCommen
 		UPDATE "comment_likes" 
 		SET 
 			"deleted_at" = NOW()
-		WHERE 
+		WHERE "deleted_at" IS NULL AND
 			"user_id" = $1 AND "comment_id" = $2
 		RETURNING "id"
 	`
@@ -81,9 +81,9 @@ func (b *commentLikeRepo) DeleteLike(c context.Context, req *models.DeleteCommen
 
 func (b *commentLikeRepo) GetLikesCount(c context.Context, req string) (int, error) {
 	query := `
-		SELECT COUNT(*) AS like_count
+		SELECT COUNT(id) AS like_count
 		FROM comment_likes
-		WHERE   comment_id = $1
+		WHERE "deleted_at" IS NULL AND  comment_id = $1
 	`
 
 	count := 0

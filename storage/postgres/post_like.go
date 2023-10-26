@@ -27,7 +27,7 @@ func (b *likeRepo) AddLike(c context.Context, req *models.CreateLike) error {
 	userInfo := c.Value("user_info").(helper.TokenInfo)
 
 	query := `
-		SELECT COUNT(*) FROM post_likes WHERE post_id = $1 AND user_id = $2
+		SELECT COUNT(id) FROM post_likes WHERE post_id = $1 AND user_id = $2
 	`
 
 	count := 0
@@ -63,7 +63,7 @@ func (b *likeRepo) DeleteLike(c context.Context, req *models.DeleteLike) (resp s
 		SET 
 			"deleted_at" = NOW()
 		WHERE 
-		"deleted_at" IS  NULL AND
+		"deleted_at" IS NULL AND
 		 "user_id" = $1 AND "post_id" = $2
 `
 	result, err := b.db.Exec(
@@ -85,9 +85,9 @@ func (b *likeRepo) DeleteLike(c context.Context, req *models.DeleteLike) (resp s
 
 func (b *likeRepo) GetLikesCount(c context.Context, req string) (int, error) {
 	query := `
-		SELECT COUNT(*) AS like_count
+		SELECT COUNT(id) AS like_count
 		FROM post_likes
-		WHERE created_at IS NOT NULL AND post_id = $1
+		WHERE deleted_at IS NULL AND post_id = $1
 	`
 
 	count := 0

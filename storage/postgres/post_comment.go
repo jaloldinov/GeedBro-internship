@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -61,7 +60,7 @@ func (b *commentRepo) GetMyComments(c context.Context) (resp *models.GetAllComme
         pc."id",
         pc."post_id",
         pc."comment",
-        (SELECT COUNT(*)
+        (SELECT COUNT(id)
             FROM "comment_likes" cl
             WHERE cl."comment_id" = pc."id"
         ) AS "likes_count",
@@ -129,7 +128,7 @@ func (b *commentRepo) GetPostComments(c context.Context, req *models.GetAllPostC
 				"id", 
 				"post_id", 
 				"comment", 
-				(SELECT COUNT(*) 
+				(SELECT COUNT(id) 
 				FROM "comment_likes"
 				WHERE "deleted_at" IS  NULL
 				AND "comment_id" = post_comments."id"
@@ -258,75 +257,111 @@ func (b *commentRepo) DeleteComment(c context.Context, req *models.DeleteComment
 }
 
 func (b *commentRepo) DeleteMyPostComment(c context.Context, req *models.DeleteComment) (resp string, err error) {
-
 	userInfo := c.Value("user_info").(helper.TokenInfo)
 
-	// Get post ID
-	postID, err := b.getPostID(c, req.Id)
+	query := `
+		WITH post_owner AS (
+			SELECT created_by
+			FROM post
+			WHERE id = (
+				SELECT post_id
+				FROM post_comments
+				WHERE id = $1
+			)
+		)
+		UPDATE post_comments
+		SET
+			deleted_at = NOW(),
+			deleted_by = $2
+		WHERE
+			deleted_at IS NULL
+			AND id = $1
+			AND (SELECT created_by FROM post_owner) = $3
+		RETURNING 'deleted'
+	`
+
+	var result string
+	err = b.db.QueryRow(c, query, req.Id, userInfo.User_id, userInfo.User_id).Scan(&result)
 	if err != nil {
-		return "", fmt.Errorf("failed to get post ID: %w", err)
-	}
-
-	// Get post owner
-	postOwner, err := b.getPostOwner(c, postID)
-	if err != nil {
-		return "", fmt.Errorf("failed to get post owner: %w", err)
-	}
-
-	isPostOwner := userInfo.User_id == postOwner
-
-	// Update comment
-	query := `UPDATE post_comments
-			  SET deleted_at = NOW(),
-				  deleted_by = $1
-			  WHERE deleted_at IS NULL AND %v AND id = $2`
-
-	result, err := b.db.Exec(
-		c,
-		fmt.Sprintf(query, isPostOwner),
-		userInfo.User_id,
-		req.Id,
-	)
-	if err != nil {
-		return "", fmt.Errorf("failed to delete (update) comment: %w", err)
-	}
-
-	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("comment not found")
-	}
-
-	return "deleted", nil
-}
-
-func (b *commentRepo) getPostID(c context.Context, commentID string) (string, error) {
-	query := `SELECT post_id FROM post_comments WHERE id = $1`
-
-	var postID string
-	err := b.db.QueryRow(c, query, commentID).Scan(&postID)
-	if err != nil {
-		if err == pgx.ErrNoRows {
+		if result == "" {
 			return "", fmt.Errorf("comment not found")
 		}
-		return "", fmt.Errorf("failed to get post ID: %w", err)
+		return "", fmt.Errorf("failed to delete comment: %w", err)
 	}
 
-	return postID, nil
+	return result, nil
 }
 
-func (b *commentRepo) getPostOwner(c context.Context, postID string) (string, error) {
-	query := `SELECT created_by FROM post WHERE id = $1`
+// func (b *commentRepo) DeleteMyPostComment(c context.Context, req *models.DeleteComment) (resp string, err error) {
 
-	var postOwner string
-	err := b.db.QueryRow(c, query, postID).Scan(&postOwner)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return "", fmt.Errorf("post not found")
-		}
-		return "", fmt.Errorf("failed to get post owner: %w", err)
-	}
+// 	userInfo := c.Value("user_info").(helper.TokenInfo)
 
-	return postOwner, nil
-}
+// 	// Get post ID
+// 	postID, err := b.getPostID(c, req.Id)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to get post ID: %w", err)
+// 	}
+
+// 	// Get post owner
+// 	postOwner, err := b.getPostOwner(c, postID)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to get post owner: %w", err)
+// 	}
+
+// 	isPostOwner := userInfo.User_id == postOwner
+
+// 	// Update comment
+// 	query := `UPDATE post_comments
+// 			  SET deleted_at = NOW(),
+// 				  deleted_by = $1
+// 			  WHERE deleted_at IS NULL AND %v AND id = $2`
+
+// 	result, err := b.db.Exec(
+// 		c,
+// 		fmt.Sprintf(query, isPostOwner),
+// 		userInfo.User_id,
+// 		req.Id,
+// 	)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to delete (update) comment: %w", err)
+// 	}
+
+// 	if result.RowsAffected() == 0 {
+// 		return "", fmt.Errorf("comment not found")
+// 	}
+
+// 	return "deleted", nil
+// }
+
+// func (b *commentRepo) getPostID(c context.Context, commentID string) (string, error) {
+// 	query := `SELECT post_id FROM post_comments WHERE id = $1`
+
+// 	var postID string
+// 	err := b.db.QueryRow(c, query, commentID).Scan(&postID)
+// 	if err != nil {
+// 		if err == pgx.ErrNoRows {
+// 			return "", fmt.Errorf("comment not found")
+// 		}
+// 		return "", fmt.Errorf("failed to get post ID: %w", err)
+// 	}
+
+// 	return postID, nil
+// }
+
+// func (b *commentRepo) getPostOwner(c context.Context, postID string) (string, error) {
+// 	query := `SELECT created_by FROM post WHERE id = $1`
+
+// 	var postOwner string
+// 	err := b.db.QueryRow(c, query, postID).Scan(&postOwner)
+// 	if err != nil {
+// 		if err == pgx.ErrNoRows {
+// 			return "", fmt.Errorf("post not found")
+// 		}
+// 		return "", fmt.Errorf("failed to get post owner: %w", err)
+// 	}
+
+// 	return postOwner, nil
+// }
 
 /*
 func (b *commentRepo) DeleteMyPostComment(c context.Context, req *models.DeleteComment) (resp string, err error) {
