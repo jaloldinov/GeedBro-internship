@@ -111,3 +111,16 @@ func (h *Handler) DeleteComment(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": resp})
 }
+
+func (h *Handler) DeleteMyPostComment(c *gin.Context) {
+	id := c.Param("id")
+
+	resp, err := h.storage.Comment().DeleteMyPostComment(c, &models.DeleteComment{Id: id})
+	if err != nil {
+		h.log.Error("error deleting comment:", logger.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": resp})
+}

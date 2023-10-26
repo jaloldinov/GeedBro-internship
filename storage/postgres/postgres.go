@@ -14,7 +14,6 @@ type store struct {
 	users        *userRepo
 	posts        *postRepo
 	likes        *likeRepo
-	files        *fileRepo
 	comments     *commentRepo
 	commentLikes *commentLikeRepo
 }
@@ -63,13 +62,6 @@ func (b *store) Like() storage.LikesI {
 		b.likes = NewLikeRepo(b.db)
 	}
 	return b.likes
-}
-
-func (b *store) File() storage.UserFileUploadI {
-	if b.files == nil {
-		b.files = NewFileRepo(b.db)
-	}
-	return b.files
 }
 
 func (b *store) Comment() storage.PostCommentsI {

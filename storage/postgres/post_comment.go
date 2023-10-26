@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -242,6 +243,62 @@ func (b *commentRepo) DeleteComment(c context.Context, req *models.DeleteComment
 		context.Background(),
 		query,
 		userInfo.User_id,
+		userInfo.User_id,
+		req.Id,
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to delete(update) comment: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return "", fmt.Errorf("comment not found")
+	}
+
+	return "deleted", nil
+}
+
+func (b *commentRepo) DeleteMyPostComment(c context.Context, req *models.DeleteComment) (resp string, err error) {
+	userInfo := c.Value("user_info").(helper.TokenInfo)
+
+	postIdQuery := `SELECT post_id FROM post_comments WHERE id = $1`
+
+	var post_id string
+	err = b.db.QueryRow(c, postIdQuery, req.Id).Scan(
+		&post_id,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("comment not found")
+		}
+		return "", fmt.Errorf("failed to get post id: %w", err)
+	}
+
+	postOwnerQuery := `SELECT created_by FROM post WHERE id = $1`
+	var post_id_owner string
+	err = b.db.QueryRow(c, postOwnerQuery, post_id).Scan(
+		&post_id_owner,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("post not found")
+		}
+		return "", fmt.Errorf("failed to get post id: %w", err)
+	}
+
+	trueR := userInfo.User_id == post_id_owner
+
+	query := fmt.Sprintf(`UPDATE "post_comments"
+							SET
+								"deleted_at" = NOW(),
+								"deleted_by" = $1
+
+							WHERE
+								"deleted_at" IS  NULL AND %v AND
+								"id" = $2`, trueR)
+
+	result, err := b.db.Exec(
+		context.Background(),
+		query,
 		userInfo.User_id,
 		req.Id,
 	)

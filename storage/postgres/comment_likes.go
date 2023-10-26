@@ -61,7 +61,7 @@ func (b *commentLikeRepo) DeleteLike(c context.Context, req *models.DeleteCommen
 	query := `
 		UPDATE "comment_likes" 
 		SET 
-			"is_active" = false
+			"deleted_at" = NOW()
 		WHERE 
 			"user_id" = $1 AND "comment_id" = $2
 		RETURNING "id"
@@ -83,7 +83,7 @@ func (b *commentLikeRepo) GetLikesCount(c context.Context, req string) (int, err
 	query := `
 		SELECT COUNT(*) AS like_count
 		FROM comment_likes
-		WHERE is_active  AND comment_id = $1
+		WHERE   comment_id = $1
 	`
 
 	count := 0

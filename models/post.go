@@ -1,10 +1,8 @@
 package models
 
-import "mime/multipart"
-
 type CreatePost struct {
-	Description string                  `json:"description"`
-	Photos      []*multipart.FileHeader `json:"photos" form:"photos"`
+	Description string   `json:"description"`
+	Photos      []string `json:"photos" form:"photos"`
 }
 
 type Post struct {

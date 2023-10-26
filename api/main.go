@@ -40,16 +40,13 @@ func NewServer(h *handler.Handler) *gin.Engine {
 	r.GET("/like-count/:post_id", h.GetLike)
 	r.DELETE("/like", helper.AuthMiddleWare, h.DeleteLike)
 
-	// file uploading
-	r.POST("/file/upload", helper.AuthMiddleWare, h.CreateFile)
-	r.POST("/files/upload", helper.AuthMiddleWare, h.CreateFiles)
-
 	// post comment section
 	r.POST("/comment/:post_id", helper.AuthMiddleWare, h.CreateComment)
 	r.GET("/my/comments", helper.AuthMiddleWare, h.GetMyComments)
 	r.GET("/post/comment/by/post/:post_id", h.GetPostComments)
 	r.PUT("/comment", helper.AuthMiddleWare, h.UpdateComment)
 	r.DELETE("/comment/:id", helper.AuthMiddleWare, h.DeleteComment)
+	r.DELETE("/my/comment/delete/:id", helper.AuthMiddleWare, h.DeleteMyPostComment)
 
 	// comment likes
 	r.POST("/comment-like", helper.AuthMiddleWare, h.CreateCommentLike)

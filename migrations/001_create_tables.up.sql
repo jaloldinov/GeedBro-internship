@@ -28,15 +28,6 @@ CREATE TABLE "post_likes" (
   "deleted_at" timestamp
 );
 
-CREATE TABLE "medias"(
-    "id"         varchar(36)    primary key,
-    "link"       text    not null,
-    "type"       integer not null,
-    "created_at" timestamp,
-    "deleted_at" timestamp,
-    "created_by" varchar(36) references "users"("id"),
-    "deleted_by" varchar(36) references "users"("id")
-);
 
 CREATE TABLE "post_comments" (
   "id" varchar(36) PRIMARY KEY,
@@ -55,6 +46,5 @@ CREATE TABLE "comment_likes" (
   "comment_id" varchar(36) NOT NULL REFERENCES "post_comments" ("id") ON DELETE CASCADE,
   "user_id" varchar(36) NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "created_at" timestamp NOT NULL DEFAULT NOW(),
-  "updated_at" timestamp,
-  "is_active" bool DEFAULT true
+  "deleted_at" timestamp
 );
