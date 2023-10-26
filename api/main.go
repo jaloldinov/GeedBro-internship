@@ -47,7 +47,7 @@ func NewServer(h *handler.Handler) *gin.Engine {
 	// post comment section
 	r.POST("/comment/:post_id", helper.AuthMiddleWare, h.CreateComment)
 	r.GET("/my/comments", helper.AuthMiddleWare, h.GetMyComments)
-	r.GET("/post/comments/:post_id", h.GetPostComments)
+	r.GET("/post/comment/by/post/:post_id", h.GetPostComments)
 	r.PUT("/comment", helper.AuthMiddleWare, h.UpdateComment)
 	r.DELETE("/comment/:id", helper.AuthMiddleWare, h.DeleteComment)
 
